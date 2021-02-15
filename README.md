@@ -14,6 +14,11 @@ mkdir fid_stat
 Download the pre-calculated statistics
 ([Google Drive](https://drive.google.com/drive/folders/1UUQVT2Zj-kW1c2FJOFIdGdlDHA3gFJJd?usp=sharing)) to `./fid_stat`.
 
+### Environment
+```bash
+pip install -r requirements.txt
+```
+Notice: Pytorch version has to be <=1.3.0 !
 
 ## Acknowledgement
 1. Inception Score code from [OpenAI's Improved GAN](https://github.com/openai/improved-gan/tree/master/inception_score) (official).
