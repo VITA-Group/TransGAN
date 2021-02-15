@@ -9,7 +9,7 @@ from __future__ import division
 from __future__ import print_function
 
 import cfg
-import models_search
+import models
 import datasets
 from functions import train, validate, LinearLrDecay, load_params, copy_params, cur_stages
 from utils.utils import set_log_dir, save_checkpoint, create_logger
@@ -46,8 +46,8 @@ def main():
     create_inception_graph(inception_path)
 
     # import network
-    gen_net = eval('models_search.'+args.gen_model+'.Generator')(args=args).cuda()
-    dis_net = eval('models_search.'+args.dis_model+'.Discriminator')(args=args).cuda()
+    gen_net = eval('models.'+args.gen_model+'.Generator')(args=args).cuda()
+    dis_net = eval('models.'+args.dis_model+'.Discriminator')(args=args).cuda()
     gen_net.set_arch(args.arch, cur_stage=2)
 
     # weight init
@@ -139,14 +139,13 @@ def main():
         gen_net.module.alpha = 1.
         dis_net.module.alpha = 1.
 
-        args.path_helper = checkpoint['path_helper']
-        logger = create_logger(args.path_helper['log_path'])
-        logger.info(f'=> loaded checkpoint {checkpoint_file} (epoch {start_epoch})')
+        # args.path_helper = checkpoint['path_helper']
+        
     else:
         # create new log dir
         assert args.exp_name
-        args.path_helper = set_log_dir('logs', args.exp_name)
-        logger = create_logger(args.path_helper['log_path'])
+    args.path_helper = set_log_dir('logs', args.exp_name)
+    logger = create_logger(args.path_helper['log_path'])
 
     logger.info(args)
     writer_dict = {
@@ -156,54 +155,16 @@ def main():
     }
 
     # train loop
-    # for epoch in tqdm(range(int(start_epoch), int(args.max_epoch)), desc='total progress'):
-    epoch = 28
-    lr_schedulers = (gen_scheduler, dis_scheduler) if args.lr_decay else None
-    cur_stage = cur_stages(epoch, args)
-    print("cur_stage " + str(cur_stage))
-    print(f"path: {args.path_helper['prefix']}")
-    if gen_net.module.cur_stage != cur_stage:
-        gen_net.module.alpha = 0. if args.fade_in else 1. # set fade_in = 0 to enable none-progreesive training
-        dis_net.module.alpha = 0. if args.fade_in else 1.
-        gen_net.module.cur_stage = cur_stage
-        dis_net.module.cur_stage = cur_stage
-        gen_optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, gen_net.parameters()),
-                                args.g_lr, (args.beta1, args.beta2))
-        dis_optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, dis_net.parameters()),
-                                args.d_lr, (args.beta1, args.beta2))
-        # set up data_loader
-    dataset = datasets.ImageDataset(args, cur_img_size=4*(2**(cur_stage+1)), bs=args.dis_batch_size)
-    train_loader = dataset.train
-    # train(args, gen_net, dis_net, gen_optimizer, dis_optimizer, gen_avg_param, train_loader, epoch, writer_dict,fixed_z,
-    #       lr_schedulers)
-    
-
-    # backup_param = copy_params(gen_net)
+        
+    epoch = 300
+    backup_param = copy_params(gen_net)
     load_params(gen_net, gen_avg_param)
-    inception_score, fid_score = validate(args, fixed_z, fid_stat, 28, gen_net, writer_dict, )
-    logger.info(f'Inception score: {inception_score}, FID score: {fid_score} || @ epoch {epoch}.')
-    # load_params(gen_net, backup_param)
-    if fid_score < best_fid:
-        best_fid = fid_score
-        is_best = True
-    else:
-        is_best = False
+    fid_score = validate(args, fixed_z, fid_stat, epoch, gen_net, writer_dict, )
+    logger.info(f'FID score: {fid_score} || @ epoch {epoch}.')
+    load_params(gen_net, backup_param)
 
-        # avg_gen_net = deepcopy(gen_net)
-        # load_params(avg_gen_net, gen_avg_param)
-        # save_checkpoint({
-        #     'epoch': epoch + 1,
-        #     'gen_model': args.gen_model,
-        #     'dis_model': args.dis_model,
-        #     'gen_state_dict': gen_net.state_dict(),
-        #     'dis_state_dict': dis_net.state_dict(),
-        #     'avg_gen_state_dict': avg_gen_net.state_dict(),
-        #     'gen_optimizer': gen_optimizer.state_dict(),
-        #     'dis_optimizer': dis_optimizer.state_dict(),
-        #     'best_fid': best_fid,
-        #     'path_helper': args.path_helper
-        # }, is_best, args.path_helper['ckpt_path'], filename="checkpoint")
-        # del avg_gen_net
+
+
 
 
 if __name__ == '__main__':

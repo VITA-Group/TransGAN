@@ -20,10 +20,10 @@ MODEL_DIR = '/tmp/imagenet'
 DATA_URL = 'http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz'
 softmax = None
 
-config = tf.ConfigProto(device_count = {'GPU': 0})
-# config = tf.ConfigProto()
+# config = tf.ConfigProto(device_count = {'GPU': 0})
+config = tf.ConfigProto()
 
-# config.gpu_options.visible_device_list= '0'
+config.gpu_options.visible_device_list= '0'
 config.gpu_options.allow_growth = True
 
 

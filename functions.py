@@ -327,46 +327,19 @@ def validate(args, fixed_z, fid_stat, epoch, gen_net: nn.Module, writer_dict, cl
 
     eval_iter = args.num_eval_imgs // args.eval_batch_size
     img_list = list()
-    if "celeba" not in args.dataset:
-        for iter_idx in tqdm(range(eval_iter), desc='sample images'):
-            z = torch.cuda.FloatTensor(np.random.normal(0, 1, (args.eval_batch_size, args.latent_dim)))
 
-            # Generate a batch of images
-            gen_imgs = gen_net(z, epoch).mul_(127.5).add_(127.5).clamp_(0.0, 255.0).permute(0, 2, 3, 1).to('cpu',
-                                                                                                    torch.uint8).numpy()
-            for img_idx, img in enumerate(gen_imgs):
-                file_name = os.path.join(fid_buffer_dir, f'iter{iter_idx}_b{img_idx}.png')
-                imsave(file_name, img)
-            img_list.extend(list(gen_imgs))
-
-        # get inception score
-        # torch.cuda.empty_cache()
-        logger.info('=> calculate inception score')
-        mean, std = get_inception_score(img_list)
-    else:
-        mean, std = 0, 0
-    print(f"Inception score: {mean}")
-    # mean, std = 0, 0
-    # get fid score
     logger.info('=> calculate fid score')
     fid_score = get_fid(args, fid_stat, epoch, gen_net, args.num_eval_imgs, args.gen_batch_size*2, writer_dict=writer_dict, cls_idx=None)
     # fid_score = calculate_fid_given_paths([fid_buffer_dir, fid_stat], inception_path=None)
     # fid_score = 10000
     print(f"FID score: {fid_score}")
 
-    if clean_dir:
-        os.system('rm -r {}'.format(fid_buffer_dir))
-    else:
-        logger.info(f'=> sampled images are saved to {fid_buffer_dir}')
-
     # writer.add_image('sampled_images', img_grid, global_steps)
-    writer.add_scalar('Inception_score/mean', mean, global_steps)
-    writer.add_scalar('Inception_score/std', std, global_steps)
     writer.add_scalar('FID_score', fid_score, global_steps)
 
     writer_dict['valid_global_steps'] = global_steps + 1
 
-    return mean, fid_score
+    return fid_score
 
 
 def get_topk_arch_hidden(args, controller, gen_net, prev_archs, prev_hiddens):

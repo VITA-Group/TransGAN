@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+python test.py \
+-gen_bs 32 \
+-dis_bs 16 \
+--dataset stl10 \
+--bottom_width 12 \
+--img_size 48 \
+--max_iter 500000 \
+--gen_model longformer_8_8_G2_1 \
+--dis_model ViT_8_8 \
+--df_dim 384 \
+--d_depth 7 \
+--g_depth 5 \
+--latent_dim 1024 \
+--gf_dim 768 \
+--num_workers 36 \
+--g_spectral_norm False \
+--d_spectral_norm True \
+--g_lr 0.0001 \
+--d_lr 0.0001 \
+--optimizer adam \
+--loss wgangp-eps \
+--wd 1e-3 \
+--beta1 0 \
+--beta2 0.99 \
+--phi 1 \
+--eval_batch_size 25 \
+--num_eval_imgs 20000 \
+--init_type xavier_uniform \
+--n_critic 5 \
+--val_freq 10 \
+--print_freq 50 \
+--grow_steps 0 0 \
+--fade_in 0 \
+--D_downsample pixel \
+--arch 1 0 1 1 1 0 0 1 1 1 0 1 0 3 \
+--patch_size 4 \
+--diff_aug translation,cutout,color \
+--load_path ./pretrained_weight/stl_checkpoint.pth \
+--exp_name stl10_test
