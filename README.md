@@ -24,7 +24,14 @@ Notice: Pytorch version has to be <=1.3.0 !
 Coming soon
 
 ### Testing
-Coming soon
+Firstly download the checkpoint from ([Google Drive](https://drive.google.com/drive/folders/1UUQVT2Zj-kW1c2FJOFIdGdlDHA3gFJJd?usp=sharing)) to `./pretrained_weight`
+```bash
+# cifar-10
+sh exps/cifar10_test.sh
+
+# stl-10
+sh exps/stl10_test.sh
+```
 
 ## Acknowledgement
 1. Inception Score code from [OpenAI's Improved GAN](https://github.com/openai/improved-gan/tree/master/inception_score) (official).
