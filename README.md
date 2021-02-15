@@ -20,6 +20,12 @@ pip install -r requirements.txt
 ```
 Notice: Pytorch version has to be <=1.3.0 !
 
+### Training
+Coming soon
+
+### Testing
+Coming soon
+
 ## Acknowledgement
 1. Inception Score code from [OpenAI's Improved GAN](https://github.com/openai/improved-gan/tree/master/inception_score) (official).
 2. FID code and CIFAR-10 statistics file from [https://github.com/bioinf-jku/TTUR](https://github.com/bioinf-jku/TTUR) (official).
