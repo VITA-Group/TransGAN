@@ -34,6 +34,5 @@ sh exps/stl10_test.sh
 ```
 
 ## Acknowledgement
-1. Inception Score code from [OpenAI's Improved GAN](https://github.com/openai/improved-gan/tree/master/inception_score) (official).
-2. FID code and CIFAR-10 statistics file from [https://github.com/bioinf-jku/TTUR](https://github.com/bioinf-jku/TTUR) (official).
-3. Codebase from [AutoGAN](https://github.com/VITA-Group/AutoGAN)
+FID code and CIFAR-10 statistics file from [https://github.com/bioinf-jku/TTUR](https://github.com/bioinf-jku/TTUR) (official).
+Codebase from [AutoGAN](https://github.com/VITA-Group/AutoGAN)
