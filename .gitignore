@@ -10,6 +10,7 @@ __pycache__/
 # C extensions
 *.so
 
+pretrained_weight/
 Logs
 logs
 sampled_image*
