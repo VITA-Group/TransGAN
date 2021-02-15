@@ -5,7 +5,7 @@ Code used for [TransGAN: Two Transformers Can Make One Strong GAN](https://https
 ![Main Pipeline](assets/TransGAN.png)
 
 ## Visual Results
-![Visual Results](assets/Visual_results.pdf)
+![Visual Results](assets/Visual_results.png)
 
 ### prepare fid statistic file
  ```bash
