@@ -1,5 +1,5 @@
 # TransGAN: Two Transformers Can Make One Strong GAN
-Code used for [TransGAN: Two Transformers Can Make One Strong GAN](https://https://github.com/yueruchen/TransGAN). 
+Code used for [TransGAN: Two Transformers Can Make One Strong GAN](https://arxiv.org/abs/2102.07074). 
 
 ## Main Pipeline
 ![Main Pipeline](assets/TransGAN.png)
