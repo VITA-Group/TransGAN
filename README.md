@@ -34,5 +34,4 @@ sh exps/stl10_test.sh
 ```
 
 ## Acknowledgement
-FID code and CIFAR-10 statistics file from [https://github.com/bioinf-jku/TTUR](https://github.com/bioinf-jku/TTUR) (official).
-Codebase from [AutoGAN](https://github.com/VITA-Group/AutoGAN)
+Codebase from [AutoGAN](https://github.com/VITA-Group/AutoGAN), [pytorch-image-models](https://github.com/rwightman/pytorch-image-models)
