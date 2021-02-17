@@ -33,9 +33,6 @@ python test.py \
 --print_freq 50 \
 --grow_steps 0 0 \
 --fade_in 0 \
---D_downsample pixel \
---arch 1 0 1 1 1 0 0 1 1 1 0 1 0 3 \
---patch_size 4 \
 --diff_aug translation,cutout,color \
 --load_path ./pretrained_weight/stl_checkpoint.pth \
 --exp_name stl10_test
