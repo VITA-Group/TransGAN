@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-# @Date    : 2019-07-25
-# @Author  : Xinyu Gong (xy_gong@tamu.edu)
-# @Link    : None
-# @Version : 0.0
-
 import logging
 import operator
 import os
@@ -229,85 +223,6 @@ def train(args, gen_net: nn.Module, dis_net: nn.Module, gen_optimizer, dis_optim
         writer_dict['train_global_steps'] = global_steps + 1
 
 
-def train_controller(args, controller, ctrl_optimizer, gen_net, prev_hiddens, prev_archs, writer_dict):
-    logger.info("=> train controller...")
-    writer = writer_dict['writer']
-    baseline = None
-
-    # train mode
-    controller.train()
-
-    # eval mode
-    gen_net.eval()
-
-    cur_stage = controller.cur_stage
-    for step in range(args.ctrl_step):
-        controller_step = writer_dict['controller_steps']
-        archs, selected_log_probs, entropies = controller.sample(args.ctrl_sample_batch, prev_hiddens=prev_hiddens,
-                                                                 prev_archs=prev_archs)
-        cur_batch_rewards = []
-        for arch in archs:
-            logger.info(f'arch: {arch}')
-            gen_net.set_arch(arch, cur_stage)
-            is_score = get_is(args, gen_net, args.rl_num_eval_img)
-            logger.info(f'get Inception score of {is_score}')
-            cur_batch_rewards.append(is_score)
-        cur_batch_rewards = torch.tensor(cur_batch_rewards, requires_grad=False).cuda()
-        cur_batch_rewards = cur_batch_rewards.unsqueeze(-1) + args.entropy_coeff * entropies  # bs * 1
-        if baseline is None:
-            baseline = cur_batch_rewards
-        else:
-            baseline = args.baseline_decay * baseline.detach() + (1 - args.baseline_decay) * cur_batch_rewards
-        adv = cur_batch_rewards - baseline
-
-        # policy loss
-        loss = -selected_log_probs * adv
-        loss = loss.sum()
-
-        # update controller
-        ctrl_optimizer.zero_grad()
-        loss.backward()
-        ctrl_optimizer.step()
-
-        # write
-        mean_reward = cur_batch_rewards.mean().item()
-        mean_adv = adv.mean().item()
-        mean_entropy = entropies.mean().item()
-        writer.add_scalar('controller/loss', loss.item(), controller_step)
-        writer.add_scalar('controller/reward', mean_reward, controller_step)
-        writer.add_scalar('controller/entropy', mean_entropy, controller_step)
-        writer.add_scalar('controller/adv', mean_adv, controller_step)
-
-        writer_dict['controller_steps'] = controller_step + 1
-
-
-def get_is(args, gen_net: nn.Module, num_img):
-    """
-    Get inception score.
-    :param args:
-    :param gen_net:
-    :param num_img:
-    :return: Inception score
-    """
-
-    # eval mode
-    gen_net = gen_net.eval()
-
-    eval_iter = num_img // args.eval_batch_size
-    img_list = list()
-    for _ in range(eval_iter):
-        z = torch.cuda.FloatTensor(np.random.normal(0, 1, (args.eval_batch_size, args.latent_dim)))
-
-        # Generate a batch of images
-        gen_imgs = gen_net(z).mul_(127.5).add_(127.5).clamp_(0.0, 255.0).permute(0, 2, 3, 1).to('cpu',
-                                                                                                torch.uint8).numpy()
-        img_list.extend(list(gen_imgs))
-
-    # get inception score
-    logger.info('calculate Inception score...')
-    mean, std = get_inception_score(img_list)
-
-    return mean
 
 
 def validate(args, fixed_z, fid_stat, epoch, gen_net: nn.Module, writer_dict, clean_dir=True):
