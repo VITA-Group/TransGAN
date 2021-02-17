@@ -1,8 +1,3 @@
-# -*- coding: utf-8 -*-
-# @Date    : 2019-08-15
-# @Author  : Xinyu Gong (xy_gong@tamu.edu)
-# @Link    : None
-# @Version : 0.0
 import torch
 import torch.nn as nn
 import math
@@ -202,17 +197,8 @@ class Generator(nn.Module):
                 ])
         for i in range(len(self.pos_embed)):
             trunc_normal_(self.pos_embed[i], std=.02)
-    
-        self.to_rgb = nn.Sequential(
-            nn.BatchNorm2d(args.gf_dim),
-            nn.ReLU(),
-            # nn.Conv2d(args.gf_dim, 3, 3, 1, 1),
-            nn.Tanh()
-        )
 
         self.deconv = nn.Sequential(
-            # nn.BatchNorm2d(self.embed_dim),
-            # nn.ReLU(),
             nn.Conv2d(self.embed_dim//16, 3, 1, 1, 0)
         )
 
@@ -268,40 +254,6 @@ class PatchEmbed(nn.Module):
         return x
 
 
-class HybridEmbed(nn.Module):
-    """ CNN Feature Map Embedding
-    Extract feature map from CNN, flatten, project to embedding dim.
-    """
-    def __init__(self, backbone, img_size=224, feature_size=None, in_chans=3, embed_dim=768):
-        super().__init__()
-        assert isinstance(backbone, nn.Module)
-        img_size = to_2tuple(img_size)
-        self.img_size = img_size
-        self.backbone = backbone
-        if feature_size is None:
-            with torch.no_grad():
-                # FIXME this is hacky, but most reliable way of determining the exact dim of the output feature
-                # map for all networks, the feature metadata has reliable channel and stride info, but using
-                # stride to calc feature dim requires info about padding of each stage that isn't captured.
-                training = backbone.training
-                if training:
-                    backbone.eval()
-                o = self.backbone(torch.zeros(1, in_chans, img_size[0], img_size[1]))[-1]
-                feature_size = o.shape[-2:]
-                feature_dim = o.shape[1]
-                backbone.train(training)
-        else:
-            feature_size = to_2tuple(feature_size)
-            feature_dim = self.backbone.feature_info.channels()[-1]
-        self.num_patches = feature_size[0] * feature_size[1]
-        self.proj = nn.Linear(feature_dim, embed_dim)
-
-    def forward(self, x):
-        x = self.backbone(x)[-1]
-        x = x.flatten(2).transpose(1, 2)
-        x = self.proj(x)
-        return x
-
 
 class Discriminator(nn.Module):
     """ Vision Transformer with support for patch or hybrid CNN input stage
@@ -315,11 +267,7 @@ class Discriminator(nn.Module):
         depth = args.d_depth
         self.args = args
         patch_size = args.patch_size
-        if hybrid_backbone is not None:
-            self.patch_embed = HybridEmbed(
-                hybrid_backbone, img_size=img_size, in_chans=in_chans, embed_dim=embed_dim)
-        else:
-            self.patch_embed = nn.Conv2d(3, embed_dim, kernel_size=patch_size, stride=patch_size, padding=0)
+        self.patch_embed = nn.Conv2d(3, embed_dim, kernel_size=patch_size, stride=patch_size, padding=0)
         num_patches = (args.img_size // patch_size)**2
 
         self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
@@ -334,9 +282,6 @@ class Discriminator(nn.Module):
             for i in range(depth)])
         self.norm = norm_layer(embed_dim)
 
-        # NOTE as per official impl, we could have a pre-logits representation dense layer + tanh here
-        #self.repr = nn.Linear(embed_dim, representation_size)
-        #self.repr_act = nn.Tanh()
 
         # Classifier head
         self.head = nn.Linear(embed_dim, num_classes) if num_classes > 0 else nn.Identity()
