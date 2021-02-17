@@ -1,8 +1,3 @@
-# -*- coding: utf-8 -*-
-# @Date    : 2019-08-15
-# @Author  : Xinyu Gong (xy_gong@tamu.edu)
-# @Link    : None
-# @Version : 0.0
 import torch
 import torch.nn as nn
 import math
@@ -196,17 +191,8 @@ class Generator(nn.Module):
                 ])
         for i in range(len(self.pos_embed)):
             trunc_normal_(self.pos_embed[i], std=.02)
-    
-        self.to_rgb = nn.Sequential(
-            nn.BatchNorm2d(args.gf_dim),
-            nn.ReLU(),
-            # nn.Conv2d(args.gf_dim, 3, 3, 1, 1),
-            nn.Tanh()
-        )
 
         self.deconv = nn.Sequential(
-            # nn.BatchNorm2d(self.embed_dim),
-            # nn.ReLU(),
             nn.Conv2d(self.embed_dim//16, 3, 1, 1, 0)
         )
 
@@ -221,15 +207,10 @@ class Generator(nn.Module):
         for index, blk in enumerate(self.blocks):
             x = blk(x, epoch)
         for index, blk in enumerate(self.upsample_blocks):
-            # x = x.permute(0,2,1)
-            # x = x.view(-1, self.embed_dim, H, W)
             x, H, W = pixel_upsample(x, H, W)
             x = x + self.pos_embed[index+1].to(x.get_device())
             for b in blk:
                 x = b(x, epoch)
-            # _, _, H, W = x.size()
-            # x = x.view(-1, self.embed_dim, H*W)
-            # x = x.permute(0,2,1)
         output = self.deconv(x.permute(0, 2, 1).view(-1, self.embed_dim//16, H, W))
         return output
 
@@ -238,63 +219,6 @@ def _downsample(x):
     # Downsample (Mean Avg Pooling with 2x2 kernel)
     return nn.AvgPool2d(kernel_size=2)(x)
 
-
-class PatchEmbed(nn.Module):
-    """ Image to Patch Embedding
-    """
-    def __init__(self, img_size=224, patch_size=16, in_chans=3, embed_dim=768):
-        super().__init__()
-        img_size = to_2tuple(img_size)
-        patch_size = to_2tuple(patch_size)
-        num_patches = (img_size[1] // patch_size[1]) * (img_size[0] // patch_size[0])
-        self.img_size = img_size
-        self.patch_size = patch_size
-        self.num_patches = num_patches
-
-        self.proj = nn.Conv2d(in_chans, embed_dim, kernel_size=patch_size, stride=patch_size)
-
-    def forward(self, x):
-        B, C, H, W = x.shape
-        # FIXME look at relaxing size constraints
-        assert H == self.img_size[0] and W == self.img_size[1], \
-            f"Input image size ({H}*{W}) doesn't match model ({self.img_size[0]}*{self.img_size[1]})."
-        x = self.proj(x).flatten(2).transpose(1, 2)
-        return x
-
-
-class HybridEmbed(nn.Module):
-    """ CNN Feature Map Embedding
-    Extract feature map from CNN, flatten, project to embedding dim.
-    """
-    def __init__(self, backbone, img_size=224, feature_size=None, in_chans=3, embed_dim=768):
-        super().__init__()
-        assert isinstance(backbone, nn.Module)
-        img_size = to_2tuple(img_size)
-        self.img_size = img_size
-        self.backbone = backbone
-        if feature_size is None:
-            with torch.no_grad():
-                # FIXME this is hacky, but most reliable way of determining the exact dim of the output feature
-                # map for all networks, the feature metadata has reliable channel and stride info, but using
-                # stride to calc feature dim requires info about padding of each stage that isn't captured.
-                training = backbone.training
-                if training:
-                    backbone.eval()
-                o = self.backbone(torch.zeros(1, in_chans, img_size[0], img_size[1]))[-1]
-                feature_size = o.shape[-2:]
-                feature_dim = o.shape[1]
-                backbone.train(training)
-        else:
-            feature_size = to_2tuple(feature_size)
-            feature_dim = self.backbone.feature_info.channels()[-1]
-        self.num_patches = feature_size[0] * feature_size[1]
-        self.proj = nn.Linear(feature_dim, embed_dim)
-
-    def forward(self, x):
-        x = self.backbone(x)[-1]
-        x = x.flatten(2).transpose(1, 2)
-        x = self.proj(x)
-        return x
 
 
 class Discriminator(nn.Module):
@@ -309,11 +233,7 @@ class Discriminator(nn.Module):
         depth = args.d_depth
         self.args = args
         patch_size = args.patch_size
-        if hybrid_backbone is not None:
-            self.patch_embed = HybridEmbed(
-                hybrid_backbone, img_size=img_size, in_chans=in_chans, embed_dim=embed_dim)
-        else:
-            self.patch_embed = nn.Conv2d(3, embed_dim, kernel_size=patch_size, stride=patch_size, padding=0)
+        self.patch_embed = nn.Conv2d(3, embed_dim, kernel_size=patch_size, stride=patch_size, padding=0)
         num_patches = (args.img_size // patch_size)**2
 
         self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
@@ -389,15 +309,3 @@ def _conv_filter(state_dict, patch_size=16):
             v = v.reshape((v.shape[0], 3, patch_size, patch_size))
         out_dict[k] = v
     return out_dict
-
-
-# def vit_small_patch16_224(pretrained=False, drop_rate=0., drop_path_rate=0., **kwargs):
-#     if pretrained:
-#         # NOTE my scale was wrong for original weights, leaving this here until I have better ones for this model
-#         kwargs.setdefault('qk_scale', 768 ** -0.5)
-#     model = VisionTransformer(patch_size=16, embed_dim=768, depth=8, num_heads=8, mlp_ratio=3., drop_rate=drop_rate, drop_path_rate=drop_path_rate, **kwargs)
-#     model.default_cfg = default_cfgs['vit_small_patch16_224']
-#     if pretrained:
-#         load_pretrained(
-#             model, num_classes=model.num_classes, in_chans=kwargs.get('in_chans', 3), filter_fn=_conv_filter)
-#     return model
