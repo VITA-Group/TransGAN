@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-# @Date    : 2019-07-25
-# @Author  : Xinyu Gong (xy_gong@tamu.edu)
-# @Link    : None
-# @Version : 0.0
-
 import torch
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
