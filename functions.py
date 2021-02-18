@@ -145,10 +145,6 @@ def train(args, gen_net: nn.Module, dis_net: nn.Module, gen_optimizer, dis_optim
                 d_real_loss = nn.MSELoss()(real_validity, real_label)
                 d_fake_loss = nn.MSELoss()(fake_validity, fake_label)
                 d_loss = d_real_loss + d_fake_loss
-        elif args.loss == 'wgangp':
-            gradient_penalty = compute_gradient_penalty(dis_net, real_imgs, fake_imgs.detach(), args.phi)
-            d_loss = -torch.mean(real_validity) + torch.mean(fake_validity) + gradient_penalty * 10 / (
-                    args.phi ** 2)
         elif args.loss == 'wgangp-eps':
             gradient_penalty = compute_gradient_penalty(dis_net, real_imgs, fake_imgs.detach(), args.phi)
             d_loss = -torch.mean(real_validity) + torch.mean(fake_validity) + gradient_penalty * 10 / (
