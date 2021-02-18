@@ -198,6 +198,13 @@ class Generator(nn.Module):
         for i in range(len(self.pos_embed)):
             trunc_normal_(self.pos_embed[i], std=.02)
 
+        self.to_rgb = nn.Sequential(
+            nn.BatchNorm2d(args.gf_dim),
+            nn.ReLU(),
+            # nn.Conv2d(args.gf_dim, 3, 3, 1, 1),
+            nn.Tanh()
+        )
+        
         self.deconv = nn.Sequential(
             nn.Conv2d(self.embed_dim//16, 3, 1, 1, 0)
         )

@@ -196,6 +196,13 @@ class Generator(nn.Module):
             nn.Conv2d(self.embed_dim//16, 3, 1, 1, 0)
         )
 
+        self.to_rgb = nn.Sequential(
+            nn.BatchNorm2d(args.gf_dim),
+            nn.ReLU(),
+            # nn.Conv2d(args.gf_dim, 3, 3, 1, 1),
+            nn.Tanh()
+        )
+
     def set_arch(self, x, cur_stage):
         pass
 

@@ -284,7 +284,7 @@ class HybridEmbed(nn.Module):
 class Discriminator(nn.Module):
     """ Vision Transformer with support for patch or hybrid CNN input stage
     """
-    def __init__(self, args, img_size=32, patch_size=None, in_chans=3, num_classes=1, embed_dim=None, depth=7,
+    def __init__(self, args, img_size=32, patch_size=4, in_chans=3, num_classes=1, embed_dim=None, depth=7,
                  num_heads=4, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop_rate=0., attn_drop_rate=0.,
                  drop_path_rate=0., hybrid_backbone=None, norm_layer=nn.LayerNorm):
         super().__init__()
@@ -292,7 +292,6 @@ class Discriminator(nn.Module):
         self.num_features = embed_dim = self.embed_dim = args.df_dim  # num_features for consistency with other models
         depth = args.d_depth
         self.args = args
-        patch_size = args.patch_size
         if hybrid_backbone is not None:
             self.patch_embed = HybridEmbed(
                 hybrid_backbone, img_size=img_size, in_chans=in_chans, embed_dim=embed_dim)
