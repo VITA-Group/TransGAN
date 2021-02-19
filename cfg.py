@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-# @Date    : 2019-07-25
-# @Author  : Xinyu Gong (xy_gong@tamu.edu)
-# @Link    : None
-# @Version : 0.0
-
 import argparse
 
 
@@ -216,7 +210,7 @@ def parse_args():
                         help='downsampling type')
     parser.add_argument('--fade_in', type=float, default=1,
                         help='fade in step')
-    parser.add_argument('--patch_size', type=int, default=1,
+    parser.add_argument('--patch_size', type=int, default=4,
                         help='fade in step')
     parser.add_argument('--d_depth', type=int, default=7,
                         help='fade in step')
