@@ -9,3 +9,4 @@ tensorboard==1.12.2
 tensorboardX==1.6
 tensorflow-gpu==1.12.0
 tqdm==4.29.1
+opencv-python
