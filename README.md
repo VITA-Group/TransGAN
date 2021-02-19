@@ -35,3 +35,16 @@ sh exps/stl10_test.sh
 
 ## Acknowledgement
 Codebase from [AutoGAN](https://github.com/VITA-Group/AutoGAN), [pytorch-image-models](https://github.com/rwightman/pytorch-image-models)
+
+## Citation
+if you find this repo is helpful, please cite
+```
+@misc{jiang2021transgan,
+      title={TransGAN: Two Transformers Can Make One Strong GAN}, 
+      author={Yifan Jiang and Shiyu Chang and Zhangyang Wang},
+      year={2021},
+      eprint={2102.07074},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
+}
+```
