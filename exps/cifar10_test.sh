@@ -7,7 +7,7 @@ python test.py \
 --bottom_width 8 \
 --img_size 32 \
 --max_iter 500000 \
---gen_model longformer_8_8_1 \
+--gen_model TransGAN_8_8_1 \
 --dis_model ViT_8_8 \
 --df_dim 384 \
 --d_depth 7 \
