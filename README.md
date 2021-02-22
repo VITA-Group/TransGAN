@@ -1,6 +1,9 @@
 # TransGAN: Two Transformers Can Make One Strong GAN
 Code used for [TransGAN: Two Transformers Can Make One Strong GAN](https://arxiv.org/abs/2102.07074). 
 
+## News
+[checkpoint](https://github.com/VITA-Group/TransGAN/blob/master/exps/celeba64_test.sh) for generating images on celeba64 dataset is released!
+
 ## Main Pipeline
 ![Main Pipeline](assets/TransGAN.png)
 
@@ -31,6 +34,9 @@ sh exps/cifar10_test.sh
 
 # stl-10
 sh exps/stl10_test.sh
+
+# celeba64
+sh exps/celeba64_test.sh
 ```
 
 ## Acknowledgement
