@@ -44,7 +44,7 @@ copy of this License.
     3.2 Derivative Works. You may specify that additional or different
     terms apply to the use, reproduction, and distribution of your
     derivative works of the Work ("Your Terms") only if (a) Your Terms
-    provide that the use limitation in Section 3.3 applies to your
+    provide that the use limitation in Section 3 applies to your
     derivative works, and (b) you identify the specific derivative
     works that are subject to Your Terms. Notwithstanding Your Terms,
     this License (including the redistribution requirements in Section
