@@ -111,7 +111,7 @@ def torch_cov(m, rowvar=False):
     return fact * m.matmul(mt).squeeze()
 
 
-def get_activations(gen_imgs, model, batch_size=50, dims=2048,
+def get_activations(args, gen_net, model, batch_size=50, dims=2048,
                     cuda=False, verbose=False):
     """Calculates the activations of the pool_3 layer for all images.
     Params:
@@ -131,41 +131,47 @@ def get_activations(gen_imgs, model, batch_size=50, dims=2048,
        activations of the given tensor when feeding inception with the
        query tensor.
     """
-    model.eval()
+    with torch.no_grad():
+        gen_net.eval()
+        model.eval()
 
-    if gen_imgs.shape[0] % batch_size != 0:
-        print(('Warning: number of images is not a multiple of the '
-               'batch size. Some samples are going to be ignored.'))
-    if batch_size > gen_imgs.shape[0]:
-        print(('Warning: batch size is bigger than the data size. '
-               'Setting batch size to data size'))
-        batch_size = gen_imgs.shape[0]
+#         if gen_imgs.shape[0] % batch_size != 0:
+#             print(('Warning: number of images is not a multiple of the '
+#                    'batch size. Some samples are going to be ignored.'))
+#         if batch_size > gen_imgs.shape[0]:
+#             print(('Warning: batch size is bigger than the data size. '
+#                    'Setting batch size to data size'))
+#             batch_size = gen_imgs.shape[0]
 
-    n_batches = gen_imgs.shape[0] // batch_size
+        n_batches = args.num_eval_imgs // batch_size
 
-    # normalize
-    gen_imgs = (gen_imgs + 1.0) / 2.0
-    pred_arr = []
-    for i in tqdm(range(n_batches)):
+        # normalize
+        
+        pred_arr = []
+        for i in tqdm(range(n_batches)):
+            z = torch.cuda.FloatTensor(np.random.normal(0, 1, (batch_size, args.latent_dim)))
+            gen_imgs = gen_net(z, 200)
+            
+            if verbose:
+                print('\rPropagating batch %d/%d' % (i + 1, n_batches),
+                      end='', flush=True)
+            start = i * batch_size
+            end = start + batch_size
+
+            images = (gen_imgs + 1.0) / 2.0
+            model.to("cuda:0")
+            pred = model(images.to("cuda:0"))[0]
+
+            # If model output is not scalar, apply global spatial average pooling.
+            # This happens if you choose a dimensionality not equal 2048.
+            if pred.shape[2] != 1 or pred.shape[3] != 1:
+                pred = adaptive_avg_pool2d(pred, output_size=(1, 1))
+
+            pred_arr += [pred.view(batch_size, -1)]
+
         if verbose:
-            print('\rPropagating batch %d/%d' % (i + 1, n_batches),
-                  end='', flush=True)
-        start = i * batch_size
-        end = start + batch_size
-
-        images = gen_imgs[start: end]
-        model.to("cuda:0")
-        pred = model(images.to("cuda:0"))[0]
-
-        # If model output is not scalar, apply global spatial average pooling.
-        # This happens if you choose a dimensionality not equal 2048.
-        if pred.shape[2] != 1 or pred.shape[3] != 1:
-            pred = adaptive_avg_pool2d(pred, output_size=(1, 1))
-
-        pred_arr += [pred.view(batch_size, -1)]
-
-    if verbose:
-        print('done')
+            print('done')
+        del images
 
     return torch.cat(pred_arr, dim=0)
 
@@ -203,7 +209,7 @@ def torch_calculate_frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6):
     return out
 
 
-def calculate_activation_statistics(gen_imgs, model, batch_size=50,
+def calculate_activation_statistics(gen_net, model, batch_size=50,
                                     dims=2048, cuda=False, verbose=False):
     """Calculation of the statistics used by the FID.
     Params:
@@ -222,13 +228,13 @@ def calculate_activation_statistics(gen_imgs, model, batch_size=50,
     -- sigma : The covariance matrix of the activations of the pool_3 layer of
                the inception model.
     """
-    act = get_activations(gen_imgs, model, batch_size, dims, cuda, verbose)
+    act = get_activations(gen_net, model, batch_size, dims, cuda, verbose)
     mu = torch.mean(act, dim=0)
     sigma = torch_cov(act, rowvar=False)
     return mu, sigma
 
 
-def _compute_statistics_of_path(path, model, batch_size, dims, cuda):
+def _compute_statistics_of_path(args, path, model, batch_size, dims, cuda):
     if isinstance(path, str):
         assert path.endswith('.npz')
         f = np.load(path)
@@ -239,14 +245,14 @@ def _compute_statistics_of_path(path, model, batch_size, dims, cuda):
         f.close()
     else:
         # a tensor
-        gen_imgs = path
-        m, s = calculate_activation_statistics(gen_imgs, model, batch_size,
+        gen_net = path
+        m, s = calculate_activation_statistics(args, gen_net, model, batch_size,
                                                dims, cuda)
 
     return m, s
 
 
-def calculate_fid_given_paths_torch(gen_imgs, path, require_grad=False, batch_size=50, cuda=True, dims=2048):
+def calculate_fid_given_paths_torch(args, gen_net, path, require_grad=False, gen_batch_size=1, batch_size=1, cuda=True, dims=2048):
     """
     Calculates the FID of two paths
     :param gen_imgs: The value range of gen_imgs should be (-1, 1). Just the output of tanh.
@@ -259,7 +265,7 @@ def calculate_fid_given_paths_torch(gen_imgs, path, require_grad=False, batch_si
     if not os.path.exists(path):
         raise RuntimeError('Invalid path: %s' % path)
 
-    assert gen_imgs.shape[0] >= dims, f'gen_imgs size: {gen_imgs.shape}'  # or will lead to nan
+    assert args.num_eval_imgs >= dims, f'gen_imgs size: {args.num_eval_imgs}'  # or will lead to nan
 
     with _get_no_grad_ctx_mgr(require_grad=require_grad):
 
@@ -269,45 +275,46 @@ def calculate_fid_given_paths_torch(gen_imgs, path, require_grad=False, batch_si
         if cuda:
             model.cuda()
 
-        m1, s1 = _compute_statistics_of_path(gen_imgs, model, batch_size,
+        m1, s1 = _compute_statistics_of_path(args, gen_net, model, batch_size,
                                              dims, cuda)
         # print(f'generated stat: {m1}, {s1}')
-        m2, s2 = _compute_statistics_of_path(path, model, batch_size,
+        m2, s2 = _compute_statistics_of_path(args, path, model, batch_size,
                                              dims, cuda)
         # print(f'GT stat: {m2}, {s2}')
         fid_value = torch_calculate_frechet_distance(m1.to("cuda:0"), s1.to("cuda:0"), torch.tensor(m2).float().cuda().to("cuda:0"),
                                                      torch.tensor(s2).float().cuda().to("cuda:0"))
+        del model
 
     return fid_value
 
 
-def get_fid(args, fid_stat, epoch, gen_net, num_img, val_batch_size, writer_dict=None, cls_idx=None):
+def get_fid(args, fid_stat, epoch, gen_net, num_img, gen_batch_size, val_batch_size, writer_dict=None, cls_idx=None):
     gen_net.eval()
     with torch.no_grad():
         # eval mode
-        gen_net = gen_net.eval()
+        gen_net.eval()
 
-        eval_iter = num_img // val_batch_size
-        img_list = []
-        for _ in tqdm(range(eval_iter), desc='sample images'):
-            z = torch.cuda.FloatTensor(np.random.normal(0, 1, (val_batch_size, args.latent_dim)))
+#         eval_iter = num_img // gen_batch_size
+#         img_list = []
+#         for _ in tqdm(range(eval_iter), desc='sample images'):
+#             z = torch.cuda.FloatTensor(np.random.normal(0, 1, (gen_batch_size, args.latent_dim)))
 
-            # Generate a batch of images
-            if args.n_classes > 0:
-                if cls_idx is not None:
-                    label = torch.ones(z.shape[0]) * cls_idx
-                    label = label.type(torch.cuda.LongTensor)
-                else:
-                    label = torch.randint(low=0, high=args.n_classes, size=(z.shape[0],), device='cuda')
-                gen_imgs = gen_net(z, epoch)
-            else:
-                gen_imgs = gen_net(z, epoch)
-            if isinstance(gen_imgs, tuple):
-                gen_imgs = gen_imgs[0]
-            img_list += [gen_imgs]
+#             # Generate a batch of images
+#             if args.n_classes > 0:
+#                 if cls_idx is not None:
+#                     label = torch.ones(z.shape[0]) * cls_idx
+#                     label = label.type(torch.cuda.LongTensor)
+#                 else:
+#                     label = torch.randint(low=0, high=args.n_classes, size=(z.shape[0],), device='cuda')
+#                 gen_imgs = gen_net(z, epoch)
+#             else:
+#                 gen_imgs = gen_net(z, epoch)
+#             if isinstance(gen_imgs, tuple):
+#                 gen_imgs = gen_imgs[0]
+#             img_list += [gen_imgs]
 
-        img_list = torch.cat(img_list, 0)
-        fid_score = calculate_fid_given_paths_torch(img_list, fid_stat)
+#         img_list = torch.cat(img_list, 0)
+        fid_score = calculate_fid_given_paths_torch(args, gen_net, fid_stat, gen_batch_size=gen_batch_size, batch_size=val_batch_size)
 
     if writer_dict:
         writer = writer_dict['writer']

@@ -23,9 +23,12 @@ import pathlib
 import warnings
 
 import numpy as np
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
+
 from scipy import linalg
 from imageio import imread
+from tqdm import tqdm
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
@@ -71,7 +74,7 @@ def _get_inception_layer(sess):
 # -------------------------------------------------------------------------------
 
 
-def get_activations(images, sess, batch_size=50, verbose=False):
+def get_activations(images, sess, batch_size=16, verbose=False):
     """Calculates the activations of the pool_3 layer for all images.
 
     Params:
@@ -87,14 +90,14 @@ def get_activations(images, sess, batch_size=50, verbose=False):
        activations of the given tensor when feeding inception with the query tensor.
     """
     inception_layer = _get_inception_layer(sess)
-    d0 = images.shape[0]
+    d0 = len(images)
     if batch_size > d0:
         print("warning: batch size is bigger than the data size. setting batch size to data size")
         batch_size = d0
     n_batches = d0 // batch_size
     n_used_imgs = n_batches * batch_size
     pred_arr = np.empty((n_used_imgs, 2048))
-    for i in range(n_batches):
+    for i in tqdm(range(n_batches)):
         if verbose:
             print("\rPropagating batch %d/%d" % (i + 1, n_batches), end="", flush=True)
         start = i * batch_size
@@ -167,7 +170,7 @@ def calculate_frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6):
 # -------------------------------------------------------------------------------
 
 
-def calculate_activation_statistics(images, sess, batch_size=50, verbose=False):
+def calculate_activation_statistics(images, sess, batch_size=16, verbose=False):
     """Calculation of the statistics used by the FID.
     Params:
     -- images      : Numpy array of dimension (n_images, hi, wi, 3). The values
@@ -206,7 +209,7 @@ def load_image_batch(files):
     return np.array([imread(str(fn)).astype(np.float32) for fn in files])
 
 
-def get_activations_from_files(files, sess, batch_size=50, verbose=False):
+def get_activations_from_files(files, sess, batch_size=16, verbose=False):
     """Calculates the activations of the pool_3 layer for all images.
 
     Params:
@@ -242,7 +245,7 @@ def get_activations_from_files(files, sess, batch_size=50, verbose=False):
     return pred_arr
 
 
-def calculate_activation_statistics_from_files(files, sess, batch_size=50, verbose=False):
+def calculate_activation_statistics_from_files(files, sess, batch_size=1, verbose=False):
     """Calculation of the statistics used by the FID.
     Params:
     -- files      : list of paths to image files. Images need to have same dimensions for all files.
@@ -290,17 +293,18 @@ def check_or_download_inception(inception_path):
 
 
 def _handle_path(path, sess, low_profile=False):
-    if path.endswith('.npz'):
+    if isinstance(path, str):
         f = np.load(path)
         m, s = f['mu'][:], f['sigma'][:]
         f.close()
     else:
-        path = pathlib.Path(path)
-        files = list(path.glob('*.jpg')) + list(path.glob('*.png'))
+#         path = pathlib.Path(path)
+        files = path
         if low_profile:
             m, s = calculate_activation_statistics_from_files(files, sess)
         else:
-            x = np.array([imread(str(fn)).astype(np.float32) for fn in files])
+#             x = np.array([imread(str(fn)).astype(np.float32) for fn in files])
+            x = path
             m, s = calculate_activation_statistics(x, sess)
             del x  # clean up memory
     return m, s
@@ -310,9 +314,9 @@ def calculate_fid_given_paths(paths, inception_path, low_profile=False):
     """ Calculates the FID of two paths. """
     # inception_path = check_or_download_inception(inception_path)
 
-    for p in paths:
-        if not os.path.exists(p):
-            raise RuntimeError("Invalid path: %s" % p)
+#     for p in paths:
+#         if not os.path.exists(p):
+#             raise RuntimeError("Invalid path: %s" % p)
 
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
