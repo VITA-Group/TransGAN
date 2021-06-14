@@ -1,1 +1,1 @@
-from models_search import ViT_custom_local544444_256_rp_noise, ViT_scale3_local_new_rp, diff_aug, ada
+from models_search import ViT_custom_local544444_256_rp_noise, ViT_scale3_local_new_rp, diff_aug, ada, ViT_custom
