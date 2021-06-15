@@ -6,7 +6,7 @@ Code used for [TransGAN: Two Pure Transformers Can Make One Strong GAN, and That
 <img src="assets/readme.png" alt="drawing" width="400"/>
 
 ## Main Pipeline
-![Main Pipeline](assets/TransGAN_1.pdf)
+![Main Pipeline](assets/TransGAN_1.png)
 
 ## Representative Visual Results
 ![Visual Results](assets/teaser_examples.jpg)
