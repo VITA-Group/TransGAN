@@ -1,6 +1,15 @@
 # TransGAN: Two Pure Transformers Can Make One Strong GAN, and That Can Scale Up
 Code used for [TransGAN: Two Pure Transformers Can Make One Strong GAN, and That Can Scale Up](https://arxiv.org/abs/2102.07074). 
 
+## Visual Results
+![Visual Results](assets/README.png)
+
+## Main Pipeline
+![Main Pipeline](assets/TransGAN_1.png)
+
+## Representative Visual Results
+![Visual Results](assets/teaser_examples.jpg)
+
 
 README waits for updated
 ## Acknowledgement
