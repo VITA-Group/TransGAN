@@ -1,6 +1,13 @@
 # TransGAN: Two Pure Transformers Can Make One Strong GAN, and That Can Scale Up
 Code used for [TransGAN: Two Pure Transformers Can Make One Strong GAN, and That Can Scale Up](https://arxiv.org/abs/2102.07074). 
 
+## Implementation
+- [ ] checkpoint gradient using torch.utils.checkpoint
+- [ ] 16bit precision training
+- [x] Distributed Training (Faster!)
+- [x] IS/FID Evaluation
+- [x] Gradient Accumulation
+
 ## Visual Results
 <!-- ![Visual Results](assets/readme.png) -->
 <img src="assets/readme.png" alt="drawing" width="400"/>
