@@ -54,8 +54,6 @@ os.system(f"CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 python train_derived.py \
 --print_freq 50 \
 --grow_steps 0 0 \
 --fade_in 0 \
---D_downsample pixel \
---arch 1 0 1 1 1 0 0 1 1 1 0 1 0 3 \
 --patch_size 4 \
 --diff_aug filter,translation,erase_ratio,color,hue \
 --fid_stat fid_stat/fid_stats_celeba_hq_256.npz \
