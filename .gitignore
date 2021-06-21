@@ -15,7 +15,6 @@ Logs
 logs
 sampled_image*
 data/
-fid_stat
 
 # Distribution / packaging
 .Python
