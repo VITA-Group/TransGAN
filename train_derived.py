@@ -164,8 +164,6 @@ def main_worker(gpu, ngpus_per_node, args):
     # fid stat
     if args.dataset.lower() == 'cifar10':
         fid_stat = 'fid_stat/fid_stats_cifar10_train.npz'
-    elif args.dataset.lower() == 'cifar10_flip':
-        fid_stat = 'fid_stat/fid_stats_cifar10_train.npz'
     elif args.dataset.lower() == 'stl10':
         fid_stat = 'fid_stat/stl10_train_unlabeled_fid_stats_48.npz'
     elif args.fid_stat is not None:

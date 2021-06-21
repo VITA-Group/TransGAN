@@ -20,19 +20,18 @@ os.system(f"CUDA_VISIBLE_DEVICES=0,1 python train_derived.py \
 --multiprocessing-distributed \
 --world-size 1 \
 --rank {args.rank} \
---dataset cifar10_flip \
+--dataset cifar10 \
 --bottom_width 8 \
 --img_size 32 \
 --max_iter 500000 \
 --gen_model ViT_custom \
---dis_model ViT_custom \
---latent_norm \
+--dis_model ViT_custom_scale2 \
 --df_dim 384 \
 --d_heads 4 \
 --d_depth 7 \
 --g_depth 5,4,2 \
 --dropout 0 \
---latent_dim 1024 \
+--latent_dim 256 \
 --gf_dim 1024 \
 --num_workers 16 \
 --g_lr 0.0001 \
@@ -51,11 +50,9 @@ os.system(f"CUDA_VISIBLE_DEVICES=0,1 python train_derived.py \
 --print_freq 50 \
 --grow_steps 0 0 \
 --fade_in 0 \
---D_downsample pixel \
---arch 1 0 1 1 1 0 0 1 1 1 0 1 0 3 \
 --patch_size 4 \
 --ema_kimg 500 \
 --ema_warmup 0.1 \
 --ema 0.9999 \
 --diff_aug translation,cutout,color \
---exp_name cifar10_flip_ema_500_0.1_latent_norm_D384_G_542_1024_deeper_fade0_wganeps_vit_8_8_color_diff_cutout_n_critic4_bs_g128_d64_glr1_dlr1_beta0_0.99")
+--exp_name cifar_train")

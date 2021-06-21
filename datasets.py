@@ -18,32 +18,6 @@ class ImageDataset(object):
             Dt = datasets.CIFAR10
             transform = transforms.Compose([
                 transforms.Resize(size=(img_size, img_size)),
-                transforms.ToTensor(),
-                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-            ])
-            args.n_classes = 0
-            train_dataset = Dt(root=args.data_path, train=True, transform=transform, download=True)
-            val_dataset = Dt(root=args.data_path, train=False, transform=transform)
-            
-            train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset)
-            val_sampler = torch.utils.data.distributed.DistributedSampler(val_dataset)
-            self.train_sampler = train_sampler
-            self.train = torch.utils.data.DataLoader(
-                train_dataset,
-                batch_size=args.dis_batch_size, shuffle=(train_sampler is None),
-                num_workers=args.num_workers, pin_memory=True, sampler=train_sampler)
-
-            self.valid = torch.utils.data.DataLoader(
-                val_dataset,
-                batch_size=args.dis_batch_size, shuffle=False,
-                num_workers=args.num_workers, pin_memory=True, sampler=val_sampler)
-
-            self.test = self.valid
-        
-        elif args.dataset.lower() == 'cifar10_flip':
-            Dt = datasets.CIFAR10
-            transform = transforms.Compose([
-                transforms.Resize(size=(img_size, img_size)),
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
                 transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
@@ -66,6 +40,7 @@ class ImageDataset(object):
                 num_workers=args.num_workers, pin_memory=True, sampler=val_sampler)
 
             self.test = self.valid
+        
             
         elif args.dataset.lower() == 'stl10':
             Dt = datasets.STL10
