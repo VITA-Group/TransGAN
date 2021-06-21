@@ -25,13 +25,13 @@ os.system(f"CUDA_VISIBLE_DEVICES=0,1 python train_derived.py \
 --img_size 32 \
 --max_iter 500000 \
 --gen_model ViT_custom \
---dis_model ViT_custom \
+--dis_model ViT_custom_scale2 \
 --df_dim 384 \
 --d_heads 4 \
 --d_depth 7 \
 --g_depth 5,4,2 \
 --dropout 0 \
---latent_dim 512 \
+--latent_dim 256 \
 --gf_dim 1024 \
 --num_workers 16 \
 --g_lr 0.0001 \
