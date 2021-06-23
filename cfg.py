@@ -166,12 +166,10 @@ def parse_args():
     parser.add_argument(
         '--gen_model',
         type=str,
-        default='shared_gan',
         help='path of gen model')
     parser.add_argument(
         '--dis_model',
         type=str,
-        default='shared_gan',
         help='path of dis model')
     parser.add_argument(
         '--controller',
