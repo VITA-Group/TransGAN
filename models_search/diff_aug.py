@@ -69,7 +69,7 @@ def rand_crop(x, affine=None):
     
 
 def rand_filter(images, affine=None):
-    ratio = 0.3
+    ratio = 0.25
    
     
     _, Hz_fbank = affine
