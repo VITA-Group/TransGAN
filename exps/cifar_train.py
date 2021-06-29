@@ -50,7 +50,7 @@ os.system(f"CUDA_VISIBLE_DEVICES=0,1 python train_derived.py \
 --print_freq 50 \
 --grow_steps 0 0 \
 --fade_in 0 \
---patch_size 4 \
+--patch_size 2 \
 --ema_kimg 500 \
 --ema_warmup 0.1 \
 --ema 0.9999 \
