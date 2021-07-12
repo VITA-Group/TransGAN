@@ -28,7 +28,7 @@ os.system(f"CUDA_VISIBLE_DEVICES=0,1 python train_derived.py \
 --dis_model ViT_custom_scale2 \
 --df_dim 384 \
 --d_heads 4 \
---d_depth 7 \
+--d_depth 3 \
 --g_depth 5,4,2 \
 --dropout 0 \
 --latent_dim 256 \
