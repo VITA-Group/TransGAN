@@ -81,9 +81,11 @@ class Attention(nn.Module):
         self.proj = nn.Linear(dim, dim)
         self.proj_drop = nn.Dropout(proj_drop)
         self.mat = matmul()
+        self.noise_strength_1 = torch.nn.Parameter(torch.zeros([]))
 
     def forward(self, x):
         B, N, C = x.shape
+        x = x + torch.randn([x.size(0), x.size(1), 1], device=x.device) * self.noise_strength_1
         qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
         q, k, v = qkv[0], qkv[1], qkv[2]   # make torchscript happy (cannot use tensor as tuple)
 
