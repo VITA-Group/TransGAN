@@ -24,7 +24,7 @@ os.system(f"CUDA_VISIBLE_DEVICES=0,1 python train_derived.py \
 --bottom_width 8 \
 --img_size 32 \
 --max_iter 500000 \
---gen_model ViT_custom \
+--gen_model ViT_custom_scale2_rp_noise \
 --dis_model ViT_custom_scale2 \
 --df_dim 384 \
 --d_heads 4 \
@@ -43,7 +43,7 @@ os.system(f"CUDA_VISIBLE_DEVICES=0,1 python train_derived.py \
 --beta2 0.99 \
 --phi 1 \
 --eval_batch_size 8 \
---num_eval_imgs 20000 \
+--num_eval_imgs 50000 \
 --init_type xavier_uniform \
 --n_critic 4 \
 --val_freq 20 \
