@@ -202,11 +202,11 @@ def window_reverse(windows, window_size, H, W):
 class Block(nn.Module):
 
     def __init__(self, dim, num_heads, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop=0., attn_drop=0.,
-                 drop_path=0., act_layer=gelu, norm_layer=nn.LayerNorm):
+                 drop_path=0., act_layer=gelu, norm_layer=nn.LayerNorm, window_size=16):
         super().__init__()
         self.norm1 = CustomNorm(norm_layer, dim)
         self.attn = Attention(
-            dim, num_heads=num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop)
+            dim, num_heads=num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop, window_size=window_size)
         # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
         self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
         self.norm2 = CustomNorm(norm_layer, dim)
@@ -220,7 +220,7 @@ class Block(nn.Module):
     
 class StageBlock(nn.Module):
 
-    def __init__(self, depth, dim, num_heads, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop=0., attn_drop=0., drop_path=0., act_layer=gelu, norm_layer=nn.LayerNorm):
+    def __init__(self, depth, dim, num_heads, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop=0., attn_drop=0., drop_path=0., act_layer=gelu, norm_layer=nn.LayerNorm, window_size=16):
         super().__init__()
         self.depth = depth
         self.block = nn.ModuleList([
@@ -234,7 +234,8 @@ class StageBlock(nn.Module):
                         attn_drop=attn_drop, 
                         drop_path=drop_path, 
                         act_layer=act_layer,
-                        norm_layer=norm_layer
+                        norm_layer=norm_layer,
+                        window_size=window_size,
                         ) for i in range(depth)])
 
     def forward(self, x):
@@ -287,7 +288,8 @@ class Generator(nn.Module):
                         attn_drop=attn_drop_rate, 
                         drop_path=0,
                         act_layer=act_layer,
-                        norm_layer=norm_layer
+                        norm_layer=norm_layer,
+                        window_size=8,
                         )
         self.upsample_blocks = nn.ModuleList([
                     StageBlock(
@@ -301,7 +303,8 @@ class Generator(nn.Module):
                         attn_drop=attn_drop_rate, 
                         drop_path=0, 
                         act_layer=act_layer,
-                        norm_layer=norm_layer
+                        norm_layer=norm_layer,
+                        window_size=16,
                         ),
                     StageBlock(
                         depth=depth[2],
@@ -314,7 +317,8 @@ class Generator(nn.Module):
                         attn_drop=attn_drop_rate, 
                         drop_path=0,
                         act_layer=act_layer,
-                        norm_layer=norm_layer
+                        norm_layer=norm_layer,
+                        window_size=32,
                         )
                     ])
         for i in range(len(self.pos_embed)):
