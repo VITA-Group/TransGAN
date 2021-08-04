@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import math
 import numpy as np
+from models_search.building_blocks_search import Cell
 from models_search.ViT_helper import DropPath, to_2tuple, trunc_normal_
 from models_search.diff_aug import DiffAugment
 import torch.utils.checkpoint as checkpoint
@@ -53,11 +54,14 @@ class Mlp(nn.Module):
         self.act = CustomAct(act_layer)
         self.fc2 = nn.Linear(hidden_features, out_features)
         self.drop = nn.Dropout(drop)
-        
+#         self.noise_strength_1 = torch.nn.Parameter(torch.zeros([]))
+#         self.noise_strength_2 = torch.nn.Parameter(torch.zeros([]))
     def forward(self, x):
+#         x = x + torch.randn([x.size(0), x.size(1), 1], device=x.device) * self.noise_strength_1
         x = self.fc1(x)
         x = self.act(x)
         x = self.drop(x)
+#         x = x + torch.randn([x.size(0), x.size(1), 1], device=x.device) * self.noise_strength_2
         x = self.fc2(x)
         x = self.drop(x)
         return x
@@ -77,7 +81,6 @@ class Attention(nn.Module):
         self.proj_drop = nn.Dropout(proj_drop)
         self.mat = matmul()
         self.window_size = window_size
-        self.noise_strength_1 = torch.nn.Parameter(torch.zeros([]))
         
         self.relative_position_bias_table = nn.Parameter(
             torch.zeros((2 * window_size - 1) * (2 * window_size - 1), num_heads))  # 2*Wh-1 * 2*Ww-1, nH
@@ -94,6 +97,8 @@ class Attention(nn.Module):
         relative_coords[:, :, 0] *= 2 * window_size - 1
         relative_position_index = relative_coords.sum(-1)  # Wh*Ww, Wh*Ww
         self.register_buffer("relative_position_index", relative_position_index)
+        
+        self.noise_strength_1 = torch.nn.Parameter(torch.zeros([]))
 
         trunc_normal_(self.relative_position_bias_table, std=.02)
         
