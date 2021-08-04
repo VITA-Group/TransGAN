@@ -4,7 +4,6 @@ import torch.nn.functional as F
 import math
 import numpy as np
 
-from models_search.building_blocks_search import Cell
 from models_search.ViT_helper import DropPath, to_2tuple, trunc_normal_
 from models_search.diff_aug import DiffAugment
 from utils.utils import make_grid, save_image
