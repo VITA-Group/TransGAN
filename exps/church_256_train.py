@@ -27,7 +27,7 @@ os.system(f"CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 python train_derived.py \
 --bottom_width 8 \
 --img_size 256 \
 --max_iter 500000 \
---gen_model ViT_custom_local544444_256_rp \
+--gen_model ViT_custom_local544444_256_rp_noise \
 --dis_model ViT_scale3_local_new_rp \
 --g_window_size 16 \
 --d_window_size 16 \
