@@ -55,7 +55,7 @@ os.system(f"CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 python train_derived.py \
 --grow_steps 0 0 \
 --fade_in 0 \
 --patch_size 4 \
---diff_aug translation,erase_ratio,color,hue \
+--diff_aug translation,erase_ratio,color \
 --fid_stat fid_stat/fid_stats_church_256.npz \
 --ema 0.995 \
 --exp_name church_256")
