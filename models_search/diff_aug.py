@@ -409,6 +409,32 @@ def rand_erase_ratio(x, ratio=0.5, affine=None):
         del grid_batch
     return x
 
+def rand_stl_erase_ratio(x, ratio=0.5, affine=None):
+    ratio_x = random.randint(20, x.size(2)//2 + 20)
+    ratio_y = random.randint(20, x.size(3)//2 + 20)
+    if random.random() < 0.3:
+#         cutout_size = int(x.size(2) * ratio_x + 0.5), int(x.size(3) * ratio_y + 0.5)
+        cutout_size = ratio_x, ratio_y
+        offset_x = torch.randint(0, x.size(2) + (1 - cutout_size[0] % 2), size=[x.size(0), 1, 1], device=x.device)
+        offset_y = torch.randint(0, x.size(3) + (1 - cutout_size[1] % 2), size=[x.size(0), 1, 1], device=x.device)
+        grid_batch, grid_x, grid_y = torch.meshgrid(
+            torch.arange(x.size(0), dtype=torch.long, device=x.device),
+            torch.arange(cutout_size[0], dtype=torch.long, device=x.device),
+            torch.arange(cutout_size[1], dtype=torch.long, device=x.device),
+        )
+        grid_x = torch.clamp(grid_x + offset_x - cutout_size[0] // 2, min=0, max=x.size(2) - 1)
+        grid_y = torch.clamp(grid_y + offset_y - cutout_size[1] // 2, min=0, max=x.size(3) - 1)
+        del offset_x
+        del offset_y
+        mask = torch.ones(x.size(0), x.size(2), x.size(3), dtype=x.dtype, device=x.device)
+        mask[grid_batch, grid_x, grid_y] = 0
+        x = x * mask.unsqueeze(1)
+        del mask
+        del grid_x
+        del grid_y
+        del grid_batch
+    return x
+
 def rand_erase2_ratio(x, ratio=0.5, affine=None):
     ratio_x = random.randint(int(x.size(2)*0.2), int(x.size(2)*0.7))
     ratio_y = random.randint(int(x.size(3)*0.2), int(x.size(3)*0.7))
@@ -566,4 +592,5 @@ AUGMENT_FNS = {
     'filter': [rand_filter],
     'geo': [rand_geo],
     'crop': [rand_crop],
+    'stl_erase_ratio': [rand_stl_erase_ratio],
 }
