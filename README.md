@@ -12,7 +12,7 @@ Code used for [TransGAN: Two Pure Transformers Can Make One Strong GAN, and That
 ![Main Pipeline](assets/TransGAN_1.png)
 
 ## Representative Visual Results
-![Cifar Visual Results](assets/cifar_visual.jpg)
+![Cifar Visual Results](assets/cifar_visual.png)
 ![Visual Results](assets/teaser_examples.jpg)
 
 
