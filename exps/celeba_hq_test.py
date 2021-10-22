@@ -12,7 +12,7 @@ def parse_args():
     return opt
 args = parse_args()
 
-os.system(f"CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 python train_derived.py \
+os.system(f"CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 python test.py \
 -gen_bs 32 \
 -dis_bs 16 \
 --accumulated_times 4 \
@@ -58,6 +58,7 @@ os.system(f"CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 python train_derived.py \
 --diff_aug filter,translation,erase_ratio,color,hue \
 --fid_stat fid_stat/fid_stats_celeba_hq_256.npz \
 --ema 0.995 \
+--load_path ./celeba_256_checkpoint \
 --exp_name celeba_hq_256")
 
 
