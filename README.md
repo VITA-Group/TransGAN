@@ -7,6 +7,8 @@ Code used for [TransGAN: Two Pure Transformers Can Make One Strong GAN, and That
 - [x] Distributed Training (Faster!)
 - [x] IS/FID Evaluation
 - [x] Gradient Accumulation
+- [x] Stronger Data Augmentation
+- [x] Self-Modulation
 
 ## Guidance
 #### Cifar training script
