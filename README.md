@@ -37,9 +37,10 @@ Codebase from [AutoGAN](https://github.com/VITA-Group/AutoGAN), [pytorch-image-m
 if you find this repo is helpful, please cite
 ```
 @article{jiang2021transgan,
-  title={TransGAN: Two Transformers Can Make One Strong GAN},
+  title={Transgan: Two pure transformers can make one strong gan, and that can scale up},
   author={Jiang, Yifan and Chang, Shiyu and Wang, Zhangyang},
-  journal={arXiv preprint arXiv:2102.07074},
+  journal={Advances in Neural Information Processing Systems},
+  volume={34},
   year={2021}
 }
 ```
