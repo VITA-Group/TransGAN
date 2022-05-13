@@ -15,7 +15,7 @@ Code used for [TransGAN: Two Pure Transformers Can Make One Strong GAN, and That
 ```
 python exp/cifar_train.py
 ```
-I disabled the evaluation during training job as it causes strange bug. Please launch another evaluation job simultaneously by copying the `path` to test script.
+I disabled the evaluation during training job as it causes strange bug. Please launch another evaluation job simultaneously by copying the `path` to [test script](https://github.com/VITA-Group/TransGAN/blob/a13640fbf4699d651c1a9da0fd936f260f5f096d/exps/cifar_test.py#L58).
 #### Cifar test
 First download the [cifar checkpoint](https://drive.google.com/drive/folders/1UEBGHyuDHqr0VzOE9ePx5kZX0zbLqWLh?usp=sharing) and put it on `./cifar_checkpoint`. Then run the following script.
 ```
